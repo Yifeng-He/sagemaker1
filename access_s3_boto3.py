@@ -83,4 +83,23 @@ except botocore.exceptions.ClientError as e:
     else:
         raise
 
+# download data from http and then upload to s3 #######################
+import os
+import urllib.request
+import boto3
+
+# download data from Internet
+def download(url, filename):
+    if not os.path.exists(filename):
+        urllib.request.urlretrieve(url, filename)
+
+# upload a file to s3        
+def upload_to_s3(bucket, file_local, file_path_s3):
+    s3 = boto3.resource('s3')
+    data = open(file_local, "rb")
+    s3.Bucket(bucket).put_object(Key=file_path_s3, Body=data)
+
+# # caltech-256
+download('https://raw.githubusercontent.com/uiuc-cse/data-fa14/gh-pages/data/iris.csv', 'test11.csv')
+upload_to_s3('yifenghe2019', 'test11.csv', 'data/test22.csv')
 
