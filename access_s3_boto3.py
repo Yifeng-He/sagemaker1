@@ -103,3 +103,15 @@ def upload_to_s3(bucket, file_local, file_path_s3):
 download('https://raw.githubusercontent.com/uiuc-cse/data-fa14/gh-pages/data/iris.csv', 'test11.csv')
 upload_to_s3('yifenghe2019', 'test11.csv', 'data/test22.csv')
 
+
+
+##### upload data with sagemaker utility function ##################
+# create a default s3 bucket
+import sagemaker
+bucket = sagemaker.Session().default_bucket() 
+# upload a local files to the s3 bucket
+s3_path = sagemaker.Session().upload_data(path='data/abc.gz', 
+                           bucket='yifenghe2019', key_prefix='data')
+# copy all files in the local folder to a s3 bucket folder (s3 folder may not exist)
+s3_path = sagemaker.Session().upload_data(path='local_data_folder', 
+                           bucket='yifenghe2019', key_prefix='data2')
