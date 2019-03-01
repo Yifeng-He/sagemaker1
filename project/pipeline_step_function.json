@@ -137,18 +137,18 @@
       "Choices": [
         {
           "Variable": "$.TrainingJobRunState",
+          "StringEquals": "Failed",
+          "Next": "Job Failed"
+        },
+        {
+          "Variable": "$.TrainingJobRunState",
           "StringEquals": "Running",
-          "Next": "Get training job status"
+          "Next": "Wait for training job"
         },
         {
           "Variable": "$.TrainingJobRunState",
           "StringEquals": "Succeeded",
           "Next": "Start model deployment"
-        },
-        {
-          "Variable": "$.TrainingJobRunState",
-          "StringEquals": "Failed",
-          "Next": "Job Failed"
         }
       ],
       "Comment": "Choose the next task based on training job status",
@@ -194,7 +194,7 @@
         {
           "Variable": "$.ModelDeploymentState",
           "StringEquals": "Running",
-          "Next": "Get model deployment status"
+          "Next": "Wait for model deployment"
         },
         {
           "Variable": "$.ModelDeploymentState",
