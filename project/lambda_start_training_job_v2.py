@@ -4,6 +4,7 @@ import logging
 from time import gmtime, strftime
 import os
 from sagemaker.amazon.amazon_estimator import get_image_uri
+from sagemaker import get_execution_role
 
 # logger
 MSG_FORMAT = '%(asctime)s %(levelname)s %(name)s: %(message)s'
@@ -14,6 +15,7 @@ logger.setLevel(logging.INFO)
 
 # context
 sagemaker = boto3.client('sagemaker')
+role_arn = get_execution_role()
 
 # function to start the sagemaker training job
 def start_training_job(role_arn, s3_train_uri, s3_validation_uri, 
@@ -92,18 +94,18 @@ def start_training_job(role_arn, s3_train_uri, s3_validation_uri,
     response = sagemaker.create_training_job(**training_params)
     training_job_arn = response['TrainingJobArn']
     #status = sagemaker.describe_training_job(TrainingJobName=job_name)['TrainingJobStatus']
-    return {'TrainingJobName': job_name, 'TrainingJobArn': training_job_arn}
+    return {'TrainingJobName': job_name, 'TrainingJobArn': training_job_arn, 'Container': container}
 
     
 # handler
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
-    job_parameters = event
-    role_arn = job_parameters['TrainingRoleArn']
-    s3_train_uri = job_parameters['S3TrainUri']
-    s3_validation_uri = job_parameters['S3ValidationUri']
-    s3_output_uri = job_parameters['S3OutputUri']
-    feature_count = job_parameters['FeatureCount']
+    
+    DATA_LAKE_BUCKET = event['TARGET_BUCKET']
+    s3_train_uri = 's3://{}/ml/data/train'.format(DATA_LAKE_BUCKET)
+    s3_validation_uri = 's3://{}/ml/data/validation'.format(DATA_LAKE_BUCKET)
+    s3_output_uri = 's3://{}/ml/model/output'.format(DATA_LAKE_BUCKET)
+    feature_count = event['FeatureCount']
 
     dict_job_info = start_training_job(role_arn, s3_train_uri, s3_validation_uri, 
                        s3_output_uri, feature_count)

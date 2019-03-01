@@ -23,11 +23,18 @@ def start_glue_job(glue_job_name, glue_job_args):
 # handler
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
-    job_name = event['JobName']
-    job_parameters = {}
-    if 'JobParameters' in event:
-        job_parameters = event['JobParameters']
-    job_id = start_glue_job(job_name, job_parameters)
-    logger.info('Starting glue job with job ID: {}'.format(job_id))
-    return job_id
+    
+    # form the arguments for glue job from state inputs
+    job_name = event['GlueJobName']
+    glue_params = {
+            '--JOB_NAME': job_name,
+            '--SOURCE_BUCKET': event['SourceBucket'], 
+            '--TARGET_BUCKET': event['TargetBucket'],
+            '--CRAWLER': event['Crawler']
+        }  
+
+    dict_job_run_id = start_glue_job(job_name, glue_params)
+    job_run_id = dict_job_run_id['JobRunId']
+    logger.info('Starting glue job with job ID: {}'.format(job_run_id))
+    return job_run_id
     

@@ -25,22 +25,22 @@ def check_model_deployment(endpoint_name):
     logger.debug('Deployment job to endpoint: {} is currently in state: {}'.format(
             endpoint_name, job_run_state))
     
-    state = 'Creating'
+    state = 'Running'
     if job_run_state in ['FAILED', 'OutOfService']:
         logger.debug('Deployment job to endpoint {} reported an error message of {}'.
                      format(endpoint_name, job_run_error_msg))
         state = 'Failed'
     if job_run_state == 'InService':
-        state = 'InService'
+        state = 'Succeeded'
     return {"State": state, "Error": job_run_error_msg}
     
 
 # handler
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
-    endpoint_name = event['EndpointName']
+    endpoint_name = event['EndpointInfo']['EndpointName']
     ret = check_model_deployment(endpoint_name)
     logger.info('Deployment job is in state: {}'.format(ret['State']))
-    return ret
+    return ret['State']
 
     

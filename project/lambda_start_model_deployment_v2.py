@@ -60,8 +60,8 @@ def start_model_deployment(job_name, container):
 # handler
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
-    container = event['Container']
-    job_name = event['JobName']
+    container = event['TrainingJobInfo']['Container']
+    job_name = event['TrainingJobInfo']['TrainingJobName']
     endpoint_info = start_model_deployment(job_name, container)
     return endpoint_info
 

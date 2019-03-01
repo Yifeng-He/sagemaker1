@@ -10,7 +10,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # context
-sagemaker = boto3.client('glue')
+sagemaker = boto3.client('sagemaker')
 
 # function to check the status of sagemaker training job
 def check_training_job(job_name):
@@ -31,7 +31,7 @@ def check_training_job(job_name):
                      format(job_name, job_run_error_msg))
         state = 'Failed'
     if job_run_state == 'SUCCEEDED':
-        state = 'Completed'
+        state = 'Succeeded'
     return {"State": state, "Error": job_run_error_msg}
     
 
@@ -39,8 +39,8 @@ def check_training_job(job_name):
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
     
-    ret = check_training_job(event['JobName'])
+    ret = check_training_job(event['TrainingJobInfo']['TrainingJobName'])
     logger.info('Sagemaker training job is in state: {}'.format(ret['State']))
-    return ret
+    return ret['State']
 
     

@@ -29,7 +29,7 @@ def check_glue_job(glue_job_name, glue_job_run_id):
                      format(glue_job_run_id, job_run_error_msg))
         state = 'Failed'
     if job_run_state == 'SUCCEEDED':
-        state = 'Completed'
+        state = 'Succeeded'
     return {"State": state, "Error": job_run_error_msg}
     
 
@@ -37,7 +37,8 @@ def check_glue_job(glue_job_name, glue_job_run_id):
 def handler(event, context):
     logger.info('Handling event: {}'.format(event))
     
-    ret = check_glue_job(event['JobName'], event['JobRunId'])
+    ret = check_glue_job(event['GlueJobName'], event['GlueJobRunId'])
     logger.info('Glue job is in state: {}'.format(ret['State']))
-    return ret
+    return ret['State']
+
     
