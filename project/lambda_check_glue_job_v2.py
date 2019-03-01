@@ -12,7 +12,7 @@ logger.setLevel(logging.INFO)
 # context
 glue = boto3.client('glue')
 
-# function to start the glue job
+# function to check the glue job
 def check_glue_job(glue_job_name, glue_job_run_id):
     logger.info('Polling glue job status, job_run_id={}'.format(glue_job_run_id))
     # query glue job status
