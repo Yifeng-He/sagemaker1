@@ -1,0 +1,30 @@
+{
+  
+  "GlueJobName": "my-glue-job-name",
+  "SourceBucket": "project-source-bucket-name",
+  "TargetBucket": "project-target-bucket-name",
+  "Crawler": "my_crawler_name",
+  "FeatureCount": 10,
+  
+  # add output from start_glue_job: 
+  #"GlueJobRunId": "my_glue_job_run_id"
+  
+  # add output from check_glue_job: 
+  #"GlueJobRunState": "my_glue_job_run_state"
+
+  
+  # add output from start_train_job: 
+  # "TrainingJobInfo": {'TrainingJobName': job_name, 'TrainingJobArn': training_job_arn, 'Container': container}
+  
+  # add output from check_train_job:
+  # "TrainingJobRunState": "my_train_job_run_state"
+  
+  # add output from start_model_deployment
+  # "EndpointInfo": {'EndpointName': endpoint_name, 'EndpointArn': endpoint_arn}
+  
+  "GluePollInterval": 180,
+  "TrainingPollInterval": 300,
+  "DeploymentPollInterval": 60, 
+
+}
+
