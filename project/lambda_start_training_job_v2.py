@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 # context
 sagemaker = boto3.client('sagemaker')
 
-# function to start the glue job
+# function to start the sagemaker training job
 def start_training_job(role_arn, s3_train_uri, s3_validation_uri, 
                        s3_output_uri, feature_count):
     
