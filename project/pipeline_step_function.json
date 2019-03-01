@@ -1,0 +1,230 @@
+{
+  "StartAt": "Start Glue job",
+  "States": {
+    "Job Failed": {
+      "Type": "Fail",
+      "Error": "Failed",
+      "Cause": "Job failed",
+      "Comment": "Job failed"
+    },
+    "Succeed": {
+      "Type": "Succeed",
+      "Comment": "Successfully deployed the model onto an inference endpoint",
+      "InputPath": "$",
+      "OutputPath": "$"
+    },
+    "Start Glue job": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_start_glue_job_v2",
+      "Comment": "This task starts the Glue job which does data transformation",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.GlueJobRunId",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Wait for Glue job"
+    },
+    "Wait for Glue job": {
+      "Type": "Wait",
+      "Comment": "Wait for Glue job for an interval before checking the job status",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "SecondsPath": "$.GluePollInterval",
+      "Next": "Get Glue job status"
+    },
+    "Get Glue job status": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_check_glue_job_v2",
+      "Comment": "Check Glue job status",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.GlueJobRunState",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Check Glue job status"
+    },
+    "Check Glue job status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.GlueJobRunState",
+          "StringEquals": "Running",
+          "Next": "Wait for Glue job"
+        },
+        {
+          "Variable": "$.GlueJobRunState",
+          "StringEquals": "Failed",
+          "Next": "Job Failed"
+        },
+        {
+          "Variable": "$.GlueJobRunState",
+          "StringEquals": "Succeeded",
+          "Next": "Start training job"
+        }
+      ],
+      "Comment": "Choose the next task based on GlueJobRunState",
+      "InputPath": "$",
+      "OutputPath": "$"
+    },
+    "Start training job": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_start_training_job_v2",
+      "Comment": "Start Sagemaker training job",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.TrainingJobInfo",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Wait for training job"
+    },
+    "Wait for training job": {
+      "Type": "Wait",
+      "Comment": "Wait for an interval before checking training job status",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "SecondsPath": "$.TrainingPollInterval",
+      "Next": "Get training job status"
+    },
+    "Get training job status": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_check_training_job_v2",
+      "Comment": "Get training job status",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.TrainingJobRunState",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Check training job status"
+    },
+    "Check training job status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.TrainingJobRunState",
+          "StringEquals": "Running",
+          "Next": "Get training job status"
+        },
+        {
+          "Variable": "$.TrainingJobRunState",
+          "StringEquals": "Succeeded",
+          "Next": "Start model deployment"
+        },
+        {
+          "Variable": "$.TrainingJobRunState",
+          "StringEquals": "Failed",
+          "Next": "Job Failed"
+        }
+      ],
+      "Comment": "Choose the next task based on training job status",
+      "InputPath": "$",
+      "OutputPath": "$"
+    },
+    "Start model deployment": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_start_model_deployment_v2",
+      "Comment": "Start to deploy the model to an inference endpoint",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.EndpointInfo",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Wait for model deployment"
+    },
+    "Wait for model deployment": {
+      "Type": "Wait",
+      "Comment": "Wait for deployment of the model onto an inference endpoint",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "SecondsPath": "$.DeploymentPollInterval",
+      "Next": "Get model deployment status"
+    },
+    "Check deployment status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.ModelDeploymentState",
+          "StringEquals": "Failed",
+          "Next": "Job Failed"
+        },
+        {
+          "Variable": "$.ModelDeploymentState",
+          "StringEquals": "Running",
+          "Next": "Get model deployment status"
+        },
+        {
+          "Variable": "$.ModelDeploymentState",
+          "StringEquals": "Succeeded",
+          "Next": "Succeed"
+        }
+      ],
+      "Comment": "Choose the next task based on the current model deployment status",
+      "InputPath": "$",
+      "OutputPath": "$"
+    },
+    "Get model deployment status": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:029716400694:function:lambda_check_model_deployment_v2",
+      "Comment": "Get the status of model deployment",
+      "InputPath": "$",
+      "OutputPath": "$",
+      "ResultPath": "$.ModelDeploymentState",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Check deployment status"
+    }
+  }
+}

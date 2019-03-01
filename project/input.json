@@ -21,6 +21,9 @@
   
   # add output from start_model_deployment
   # "EndpointInfo": {'EndpointName': endpoint_name, 'EndpointArn': endpoint_arn}
+
+  # add output from check_model_deployment:
+  # "ModelDeploymentState": "my_model_deployment_state"
   
   "GluePollInterval": 180,
   "TrainingPollInterval": 300,
