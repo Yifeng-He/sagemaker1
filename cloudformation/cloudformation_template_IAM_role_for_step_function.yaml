@@ -1,0 +1,26 @@
+# cloudformation template to create a role for lambda function
+# The policies for step-function-role uses a lambda policy which include 
+# all the managed policies ARNs of all the lambda functions used in the 
+# step fucntions
+
+  
+  # IAM roles for steo functions
+  RoleForStepFunction:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: !Sub 'states.${AWS::Region}.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      Policies:
+      - PolicyName: lambda
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: 'lambda:InvokeFunction'
+            Resource:
+            - !GetAtt 'FunctionSendMessage.Arn'
+            - !GetAtt 'FunctionFetchActivityCount.Arn'
