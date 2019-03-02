@@ -1,0 +1,21 @@
+# cloudformation template to create a lambda function
+# Lambda functions can be created based on code stored in zipfiles on S3
+# In lambda_code.zip, there is lambda_function.py, in which there is a function called: lambda_handler(event, context)
+# ref: https://serverlesscode.com/post/cloudformation-deploy-lambda-resources/
+
+"MyLambdaFunctionName": {
+    "Type": "AWS::Lambda::Function",
+    "Properties": {
+        "Code": {
+            "S3Bucket": "my_bucket_name",
+            "S3Key": "folder_name/lambda_code.zip"
+        },
+        "Role": {
+            "Fn::GetAtt": ["LambdaExecutionRole", "Arn"]
+        },
+        "Timeout": 60,
+        "Handler": "lambda_function.lambda_handler",
+        "Runtime": "python2.7",
+        "MemorySize": 128
+    }
+}
