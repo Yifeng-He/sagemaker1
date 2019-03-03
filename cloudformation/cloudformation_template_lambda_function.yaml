@@ -3,6 +3,9 @@
 # In lambda_code.zip, there is lambda_function.py, in which there is a function called: lambda_handler(event, context)
 # ref: https://serverlesscode.com/post/cloudformation-deploy-lambda-resources/
 
+# The role for the mabda function is RoleForLambdaFunction, which is attached with 
+# three standard pollicies: AWSLambdaExecute, AmazonS3FullAccess, AmazonDynamoDBFullAccess
+
 "MyLambdaFunctionName": {
     "Type": "AWS::Lambda::Function",
     "Properties": {
@@ -11,7 +14,7 @@
             "S3Key": "folder_name/lambda_code.zip"
         },
         "Role": {
-            "Fn::GetAtt": ["LambdaExecutionRole", "Arn"]
+            "Fn::GetAtt": ["RoleForLambdaFunction", "Arn"]
         },
         "Timeout": 60,
         "Handler": "lambda_function.lambda_handler",
@@ -19,3 +22,19 @@
         "MemorySize": 128
     }
 }
+
+# IAM role for lambda function
+RoleForLambdaFunction:
+Type: 'AWS::IAM::Role'
+Properties:
+  AssumeRolePolicyDocument:
+    Version: '2012-10-17'
+    Statement:
+    - Effect: Allow
+      Principal:
+        Service: 'lambda.amazonaws.com'
+      Action: 'sts:AssumeRole'
+  ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
