@@ -2,6 +2,8 @@
 # you need to create one or more policies in the AWS console, and then 
 # assign their ARNs to ManagedPolicyArns
 
+# Alternatively, you can use standard policy such as: - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
 # IAM role for lambda function
 RoleForLambdaFunction:
 Type: 'AWS::IAM::Role'
